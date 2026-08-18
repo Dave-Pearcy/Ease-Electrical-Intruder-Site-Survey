@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="EE Survey">
 <meta name="theme-color" content="#1B3A5C">
-<link rel="manifest" href="./manifest.json">
 <title>Ease Electrical – Site Survey</title>
 
 <style>
@@ -99,7 +98,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-#sign-btn {
+#new-btn {
   background: var(--amber);
   color: var(--navy);
   border: none;
@@ -111,7 +110,7 @@ body {
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
-#sign-btn:active { opacity: 0.8; }
+#new-btn:active { opacity: 0.8; }
 
 /* ─── Progress Bar ──────────────────────────────────────────── */
 #progress-wrap {
@@ -140,51 +139,6 @@ body {
 
 /* ─── Main Content ──────────────────────────────────────────── */
 #main { padding: 16px; max-width: 700px; margin: 0 auto; }
-
-/* ─── Login Screen ──────────────────────────────────────────── */
-#login-screen {
-  min-height: calc(100vh - 120px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 40px 20px;
-  text-align: center;
-}
-.login-logo {
-  width: 80px;
-  height: 80px;
-  background: var(--navy);
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 32px;
-  color: var(--amber);
-}
-#login-screen h1 { font-size: 24px; color: var(--navy); font-weight: 800; }
-#login-screen p { font-size: 15px; color: var(--muted); max-width: 320px; line-height: 1.5; }
-#ms-sign-in-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--navy);
-  color: var(--white);
-  border: none;
-  border-radius: 10px;
-  padding: 16px 28px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  min-height: 56px;
-  box-shadow: 0 4px 16px rgba(27,58,92,0.3);
-  -webkit-tap-highlight-color: transparent;
-}
-#ms-sign-in-btn:active { opacity: 0.85; transform: scale(0.98); }
-#ms-sign-in-btn svg { flex-shrink: 0; }
-.login-note { font-size: 13px; color: var(--muted); }
 
 /* ─── Section Cards ─────────────────────────────────────────── */
 .section-card {
@@ -292,7 +246,10 @@ select {
   user-select: none;
   transition: all 0.15s;
 }
-.check-item input[type="checkbox"] { display: none; }
+.check-item input[type="checkbox"] {
+  position: absolute; opacity: 0; width: 0; height: 0;
+  margin: 0; pointer-events: none;
+}
 .check-item .cb-box {
   width: 18px;
   height: 18px;
@@ -434,7 +391,7 @@ select {
   z-index: 100;
   box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
 }
-#save-draft-btn {
+#pdf-btn {
   flex: 1;
   background: var(--light);
   color: var(--navy);
@@ -447,7 +404,7 @@ select {
   min-height: 52px;
   -webkit-tap-highlight-color: transparent;
 }
-#submit-btn {
+#share-btn {
   flex: 2;
   background: var(--navy);
   color: var(--white);
@@ -464,8 +421,8 @@ select {
   justify-content: center;
   gap: 8px;
 }
-#submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-#submit-btn:active:not(:disabled) { opacity: 0.85; }
+#share-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+#share-btn:active:not(:disabled) { opacity: 0.85; }
 
 /* ─── Toast ─────────────────────────────────────────────────── */
 #toast {
@@ -531,12 +488,11 @@ select {
     <div class="logo-mark">EE</div>
     <div class="logo-text">
       <span>EASE ELECTRICAL LTD</span>
-      <span>PD 6662:2017 Site Survey</span>
+      <span>PD 6662:2017 Site Survey &middot; v2</span>
     </div>
   </div>
   <div id="auth-status">
-    <span id="user-name" style="display:none"></span>
-    <button id="sign-btn" onclick="handleAuthClick()">Sign In</button>
+    <button id="new-btn" onclick="newSurvey()">＋ New</button>
   </div>
 </header>
 
@@ -548,26 +504,14 @@ select {
 <!-- ═══ MAIN ═════════════════════════════════════════════════════ -->
 <main id="main">
 
-  <!-- LOGIN SCREEN -->
-  <div id="login-screen">
-    <div class="login-logo">EE</div>
-    <h1>Site Survey</h1>
-    <p>Sign in with your Microsoft 365 work account to complete and save surveys directly to OneDrive.</p>
-    <button id="ms-sign-in-btn" onclick="handleAuthClick()">
-      <svg width="21" height="21" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
-        <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
-        <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
-        <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
-      </svg>
-      Sign in with Microsoft 365
-    </button>
-    <p class="login-note">Surveys are saved to your OneDrive under<br><strong>Ease Electrical Surveys</strong></p>
-    <div id="auth-error" style="display:none;background:#FEE2E2;border:1px solid #FCA5A5;border-radius:10px;padding:14px 18px;max-width:340px;font-size:13px;color:#B91C1C;text-align:left;line-height:1.5;"></div>
+  <div id="ios-hint" style="display:none;background:#E8F4FD;border:1px solid #B3D9F0;border-radius:10px;padding:12px 14px;font-size:13px;color:#1565C0;line-height:1.5;margin-bottom:12px;position:relative">
+    <button onclick="dismissHint()" style="position:absolute;top:8px;right:10px;background:none;border:none;font-size:18px;color:#1565C0;cursor:pointer;line-height:1">&times;</button>
+    <strong>Tip:</strong> Tap the <strong>Share</strong> button in Safari, then <strong>Add to Home Screen</strong> to use this like a normal app.
   </div>
 
-  <!-- SURVEY FORM (hidden until signed in) -->
-  <div id="survey-form" style="display:none">
+
+  <!-- SURVEY FORM -->
+  <div id="survey-form">
 
   <!-- ── S1: Survey Details ───────────────────────────────────── -->
   <div class="section-card" id="s1">
@@ -693,22 +637,22 @@ select {
       <div class="field-group">
         <label class="field-label">Property Type</label>
         <div class="check-group" id="cg_proptype">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="proptype" value="Detached House"><span class="cb-box"></span>Detached House</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="proptype" value="Semi-Detached"><span class="cb-box"></span>Semi-Detached</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="proptype" value="Terraced"><span class="cb-box"></span>Terraced</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="proptype" value="Flat/Apt"><span class="cb-box"></span>Flat / Apt</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="proptype" value="Commercial"><span class="cb-box"></span>Commercial</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="proptype" value="Industrial"><span class="cb-box"></span>Industrial</label>
+          <label class="check-item"><input type="checkbox" name="proptype" value="Detached House"><span class="cb-box"></span>Detached House</label>
+          <label class="check-item"><input type="checkbox" name="proptype" value="Semi-Detached"><span class="cb-box"></span>Semi-Detached</label>
+          <label class="check-item"><input type="checkbox" name="proptype" value="Terraced"><span class="cb-box"></span>Terraced</label>
+          <label class="check-item"><input type="checkbox" name="proptype" value="Flat/Apt"><span class="cb-box"></span>Flat / Apt</label>
+          <label class="check-item"><input type="checkbox" name="proptype" value="Commercial"><span class="cb-box"></span>Commercial</label>
+          <label class="check-item"><input type="checkbox" name="proptype" value="Industrial"><span class="cb-box"></span>Industrial</label>
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">Construction</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="construction" value="Brick/Block"><span class="cb-box"></span>Brick/Block</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="construction" value="Timber Frame"><span class="cb-box"></span>Timber Frame</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="construction" value="Steel Frame"><span class="cb-box"></span>Steel Frame</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="construction" value="Concrete"><span class="cb-box"></span>Concrete</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="construction" value="Mixed"><span class="cb-box"></span>Mixed</label>
+          <label class="check-item"><input type="checkbox" name="construction" value="Brick/Block"><span class="cb-box"></span>Brick/Block</label>
+          <label class="check-item"><input type="checkbox" name="construction" value="Timber Frame"><span class="cb-box"></span>Timber Frame</label>
+          <label class="check-item"><input type="checkbox" name="construction" value="Steel Frame"><span class="cb-box"></span>Steel Frame</label>
+          <label class="check-item"><input type="checkbox" name="construction" value="Concrete"><span class="cb-box"></span>Concrete</label>
+          <label class="check-item"><input type="checkbox" name="construction" value="Mixed"><span class="cb-box"></span>Mixed</label>
         </div>
       </div>
       <div class="field-row">
@@ -724,21 +668,21 @@ select {
       <div class="field-group">
         <label class="field-label">Occupancy</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="occupancy" value="Permanently Occupied"><span class="cb-box"></span>Permanently Occupied</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="occupancy" value="Part-time"><span class="cb-box"></span>Part-time</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="occupancy" value="Unoccupied (days)"><span class="cb-box"></span>Unoccupied (days)</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="occupancy" value="Unoccupied (nights)"><span class="cb-box"></span>Unoccupied (nights)</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="occupancy" value="Vacant"><span class="cb-box"></span>Vacant</label>
+          <label class="check-item"><input type="checkbox" name="occupancy" value="Permanently Occupied"><span class="cb-box"></span>Permanently Occupied</label>
+          <label class="check-item"><input type="checkbox" name="occupancy" value="Part-time"><span class="cb-box"></span>Part-time</label>
+          <label class="check-item"><input type="checkbox" name="occupancy" value="Unoccupied (days)"><span class="cb-box"></span>Unoccupied (days)</label>
+          <label class="check-item"><input type="checkbox" name="occupancy" value="Unoccupied (nights)"><span class="cb-box"></span>Unoccupied (nights)</label>
+          <label class="check-item"><input type="checkbox" name="occupancy" value="Vacant"><span class="cb-box"></span>Vacant</label>
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">Usage</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="usage" value="Domestic"><span class="cb-box"></span>Domestic</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="usage" value="Retail/Shop"><span class="cb-box"></span>Retail/Shop</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="usage" value="Office"><span class="cb-box"></span>Office</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="usage" value="Warehouse"><span class="cb-box"></span>Warehouse</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="usage" value="Manufacturing"><span class="cb-box"></span>Manufacturing</label>
+          <label class="check-item"><input type="checkbox" name="usage" value="Domestic"><span class="cb-box"></span>Domestic</label>
+          <label class="check-item"><input type="checkbox" name="usage" value="Retail/Shop"><span class="cb-box"></span>Retail/Shop</label>
+          <label class="check-item"><input type="checkbox" name="usage" value="Office"><span class="cb-box"></span>Office</label>
+          <label class="check-item"><input type="checkbox" name="usage" value="Warehouse"><span class="cb-box"></span>Warehouse</label>
+          <label class="check-item"><input type="checkbox" name="usage" value="Manufacturing"><span class="cb-box"></span>Manufacturing</label>
         </div>
       </div>
       <div class="field-row">
@@ -764,20 +708,20 @@ select {
       <div class="field-group">
         <label class="field-label">CCTV Present?</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cctv" value="Yes – monitored"><span class="cb-box"></span>Yes – monitored</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cctv" value="Yes – recorded only"><span class="cb-box"></span>Yes – recorded only</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cctv" value="No"><span class="cb-box"></span>No</label>
+          <label class="check-item"><input type="checkbox" name="cctv" value="Yes – monitored"><span class="cb-box"></span>Yes – monitored</label>
+          <label class="check-item"><input type="checkbox" name="cctv" value="Yes – recorded only"><span class="cb-box"></span>Yes – recorded only</label>
+          <label class="check-item"><input type="checkbox" name="cctv" value="No"><span class="cb-box"></span>No</label>
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">Other Security</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="othersec" value="Access Control"><span class="cb-box"></span>Access Control</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="othersec" value="Security Lighting"><span class="cb-box"></span>Security Lighting</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="othersec" value="Shutters/Grilles"><span class="cb-box"></span>Shutters/Grilles</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="othersec" value="Safe/Vault"><span class="cb-box"></span>Safe/Vault</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="othersec" value="Guard/Concierge"><span class="cb-box"></span>Guard/Concierge</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="othersec" value="None"><span class="cb-box"></span>None</label>
+          <label class="check-item"><input type="checkbox" name="othersec" value="Access Control"><span class="cb-box"></span>Access Control</label>
+          <label class="check-item"><input type="checkbox" name="othersec" value="Security Lighting"><span class="cb-box"></span>Security Lighting</label>
+          <label class="check-item"><input type="checkbox" name="othersec" value="Shutters/Grilles"><span class="cb-box"></span>Shutters/Grilles</label>
+          <label class="check-item"><input type="checkbox" name="othersec" value="Safe/Vault"><span class="cb-box"></span>Safe/Vault</label>
+          <label class="check-item"><input type="checkbox" name="othersec" value="Guard/Concierge"><span class="cb-box"></span>Guard/Concierge</label>
+          <label class="check-item"><input type="checkbox" name="othersec" value="None"><span class="cb-box"></span>None</label>
         </div>
       </div>
     </div>
@@ -793,10 +737,10 @@ select {
       <div class="field-group">
         <label class="field-label">Existing System?</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="existing" value="No – new install"><span class="cb-box"></span>No – new install</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="existing" value="Yes – replace"><span class="cb-box"></span>Yes – replace</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="existing" value="Yes – upgrade/extend"><span class="cb-box"></span>Yes – upgrade/extend</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="existing" value="Yes – takeover only"><span class="cb-box"></span>Yes – takeover only</label>
+          <label class="check-item"><input type="checkbox" name="existing" value="No – new install"><span class="cb-box"></span>No – new install</label>
+          <label class="check-item"><input type="checkbox" name="existing" value="Yes – replace"><span class="cb-box"></span>Yes – replace</label>
+          <label class="check-item"><input type="checkbox" name="existing" value="Yes – upgrade/extend"><span class="cb-box"></span>Yes – upgrade/extend</label>
+          <label class="check-item"><input type="checkbox" name="existing" value="Yes – takeover only"><span class="cb-box"></span>Yes – takeover only</label>
         </div>
       </div>
       <div class="field-row">
@@ -826,19 +770,19 @@ select {
       <div class="field-group">
         <label class="field-label">Wiring Condition</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="wiring" value="Good – retain wiring"><span class="cb-box"></span>Good – retain wiring</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="wiring" value="Fair – partial rewire"><span class="cb-box"></span>Fair – partial rewire</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="wiring" value="Poor – full rewire required"><span class="cb-box"></span>Poor – full rewire required</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="wiring" value="Unknown"><span class="cb-box"></span>Unknown</label>
+          <label class="check-item"><input type="checkbox" name="wiring" value="Good – retain wiring"><span class="cb-box"></span>Good – retain wiring</label>
+          <label class="check-item"><input type="checkbox" name="wiring" value="Fair – partial rewire"><span class="cb-box"></span>Fair – partial rewire</label>
+          <label class="check-item"><input type="checkbox" name="wiring" value="Poor – full rewire required"><span class="cb-box"></span>Poor – full rewire required</label>
+          <label class="check-item"><input type="checkbox" name="wiring" value="Unknown"><span class="cb-box"></span>Unknown</label>
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">ARC Contract?</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="arc" value="Yes – retain existing ARC"><span class="cb-box"></span>Yes – retain existing ARC</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="arc" value="Yes – transfer to new ARC"><span class="cb-box"></span>Yes – transfer to new ARC</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="arc" value="No – self-monitoring"><span class="cb-box"></span>No – self-monitoring</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="arc" value="No – bells only"><span class="cb-box"></span>No – bells only</label>
+          <label class="check-item"><input type="checkbox" name="arc" value="Yes – retain existing ARC"><span class="cb-box"></span>Yes – retain existing ARC</label>
+          <label class="check-item"><input type="checkbox" name="arc" value="Yes – transfer to new ARC"><span class="cb-box"></span>Yes – transfer to new ARC</label>
+          <label class="check-item"><input type="checkbox" name="arc" value="No – self-monitoring"><span class="cb-box"></span>No – self-monitoring</label>
+          <label class="check-item"><input type="checkbox" name="arc" value="No – bells only"><span class="cb-box"></span>No – bells only</label>
         </div>
       </div>
     </div>
@@ -860,10 +804,10 @@ select {
       <div class="field-group">
         <label class="field-label">Recommended Grade</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="grade" value="Grade 1"><span class="cb-box"></span>Grade 1</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="grade" value="Grade 2"><span class="cb-box"></span>Grade 2</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="grade" value="Grade 3"><span class="cb-box"></span>Grade 3</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="grade" value="Grade 4"><span class="cb-box"></span>Grade 4</label>
+          <label class="check-item"><input type="checkbox" name="grade" value="Grade 1"><span class="cb-box"></span>Grade 1</label>
+          <label class="check-item"><input type="checkbox" name="grade" value="Grade 2"><span class="cb-box"></span>Grade 2</label>
+          <label class="check-item"><input type="checkbox" name="grade" value="Grade 3"><span class="cb-box"></span>Grade 3</label>
+          <label class="check-item"><input type="checkbox" name="grade" value="Grade 4"><span class="cb-box"></span>Grade 4</label>
         </div>
       </div>
       <div class="field-group">
@@ -880,11 +824,11 @@ select {
       <div class="field-group">
         <label class="field-label">Environmental Class</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="envclass" value="Class I"><span class="cb-box"></span>Class I</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="envclass" value="Class II"><span class="cb-box"></span>Class II</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="envclass" value="Class III"><span class="cb-box"></span>Class III</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="envclass" value="Class IV"><span class="cb-box"></span>Class IV</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="envclass" value="Mixed"><span class="cb-box"></span>Mixed – see notes</label>
+          <label class="check-item"><input type="checkbox" name="envclass" value="Class I"><span class="cb-box"></span>Class I</label>
+          <label class="check-item"><input type="checkbox" name="envclass" value="Class II"><span class="cb-box"></span>Class II</label>
+          <label class="check-item"><input type="checkbox" name="envclass" value="Class III"><span class="cb-box"></span>Class III</label>
+          <label class="check-item"><input type="checkbox" name="envclass" value="Class IV"><span class="cb-box"></span>Class IV</label>
+          <label class="check-item"><input type="checkbox" name="envclass" value="Mixed"><span class="cb-box"></span>Mixed – see notes</label>
         </div>
       </div>
       <div class="field-row">
@@ -980,10 +924,10 @@ select {
       <div class="field-group">
         <label class="field-label">CIE Grade</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="ciegrade" value="Grade 1"><span class="cb-box"></span>Grade 1</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="ciegrade" value="Grade 2"><span class="cb-box"></span>Grade 2</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="ciegrade" value="Grade 3"><span class="cb-box"></span>Grade 3</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="ciegrade" value="Grade 4"><span class="cb-box"></span>Grade 4</label>
+          <label class="check-item"><input type="checkbox" name="ciegrade" value="Grade 1"><span class="cb-box"></span>Grade 1</label>
+          <label class="check-item"><input type="checkbox" name="ciegrade" value="Grade 2"><span class="cb-box"></span>Grade 2</label>
+          <label class="check-item"><input type="checkbox" name="ciegrade" value="Grade 3"><span class="cb-box"></span>Grade 3</label>
+          <label class="check-item"><input type="checkbox" name="ciegrade" value="Grade 4"><span class="cb-box"></span>Grade 4</label>
         </div>
       </div>
       <div class="field-row">
@@ -999,10 +943,10 @@ select {
       <div class="field-group">
         <label class="field-label">Keypad Type</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="kptype" value="Digital Keypad"><span class="cb-box"></span>Digital Keypad</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="kptype" value="Proximity Fob"><span class="cb-box"></span>Proximity Fob</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="kptype" value="Biometric"><span class="cb-box"></span>Biometric</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="kptype" value="Combined"><span class="cb-box"></span>Combined</label>
+          <label class="check-item"><input type="checkbox" name="kptype" value="Digital Keypad"><span class="cb-box"></span>Digital Keypad</label>
+          <label class="check-item"><input type="checkbox" name="kptype" value="Proximity Fob"><span class="cb-box"></span>Proximity Fob</label>
+          <label class="check-item"><input type="checkbox" name="kptype" value="Biometric"><span class="cb-box"></span>Biometric</label>
+          <label class="check-item"><input type="checkbox" name="kptype" value="Combined"><span class="cb-box"></span>Combined</label>
         </div>
       </div>
       <div class="field-row">
@@ -1018,9 +962,9 @@ select {
       <div class="field-group">
         <label class="field-label">Event Log</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="evlog" value="On-board"><span class="cb-box"></span>On-board</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="evlog" value="Remote/Cloud"><span class="cb-box"></span>Remote / Cloud</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="evlog" value="ARC Log Only"><span class="cb-box"></span>ARC Log Only</label>
+          <label class="check-item"><input type="checkbox" name="evlog" value="On-board"><span class="cb-box"></span>On-board</label>
+          <label class="check-item"><input type="checkbox" name="evlog" value="Remote/Cloud"><span class="cb-box"></span>Remote / Cloud</label>
+          <label class="check-item"><input type="checkbox" name="evlog" value="ARC Log Only"><span class="cb-box"></span>ARC Log Only</label>
         </div>
       </div>
       <div class="field-row">
@@ -1049,12 +993,12 @@ select {
       <div class="field-group">
         <label class="field-label">Signalling Method</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="sigmethod" value="PSTN"><span class="cb-box"></span>PSTN</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="sigmethod" value="Dual-path (PSTN + IP)"><span class="cb-box"></span>Dual-path (PSTN + IP)</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="sigmethod" value="IP Only"><span class="cb-box"></span>IP Only</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="sigmethod" value="GSM / GPRS"><span class="cb-box"></span>GSM / GPRS</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="sigmethod" value="App / Self-monitor"><span class="cb-box"></span>App / Self-monitor</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="sigmethod" value="None"><span class="cb-box"></span>None</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="PSTN"><span class="cb-box"></span>PSTN</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="Dual-path (PSTN + IP)"><span class="cb-box"></span>Dual-path (PSTN + IP)</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="IP Only"><span class="cb-box"></span>IP Only</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="GSM / GPRS"><span class="cb-box"></span>GSM / GPRS</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="App / Self-monitor"><span class="cb-box"></span>App / Self-monitor</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="None"><span class="cb-box"></span>None</label>
         </div>
       </div>
       <div class="field-row">
@@ -1086,10 +1030,10 @@ select {
       <div class="field-group">
         <label class="field-label">Confirmed Alarm (BS 8243)</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="confalarm" value="Sequential Detection"><span class="cb-box"></span>Sequential Detection</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="confalarm" value="Audio Verification"><span class="cb-box"></span>Audio Verification</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="confalarm" value="CCTV Verification"><span class="cb-box"></span>CCTV Verification</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="confalarm" value="Not Required"><span class="cb-box"></span>Not Required</label>
+          <label class="check-item"><input type="checkbox" name="confalarm" value="Sequential Detection"><span class="cb-box"></span>Sequential Detection</label>
+          <label class="check-item"><input type="checkbox" name="confalarm" value="Audio Verification"><span class="cb-box"></span>Audio Verification</label>
+          <label class="check-item"><input type="checkbox" name="confalarm" value="CCTV Verification"><span class="cb-box"></span>CCTV Verification</label>
+          <label class="check-item"><input type="checkbox" name="confalarm" value="Not Required"><span class="cb-box"></span>Not Required</label>
         </div>
       </div>
     </div>
@@ -1118,8 +1062,8 @@ select {
       <div class="field-group">
         <label class="field-label">Strobe Required?</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="strobe" value="Yes"><span class="cb-box"></span>Yes</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="strobe" value="No"><span class="cb-box"></span>No</label>
+          <label class="check-item"><input type="checkbox" name="strobe" value="Yes"><span class="cb-box"></span>Yes</label>
+          <label class="check-item"><input type="checkbox" name="strobe" value="No"><span class="cb-box"></span>No</label>
         </div>
       </div>
     </div>
@@ -1136,15 +1080,15 @@ select {
         <div class="field-group">
           <label class="field-label">Mains Supply Available?</label>
           <div class="check-group">
-            <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="mains" value="Yes"><span class="cb-box"></span>Yes</label>
-            <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="mains" value="No"><span class="cb-box"></span>No</label>
+            <label class="check-item"><input type="checkbox" name="mains" value="Yes"><span class="cb-box"></span>Yes</label>
+            <label class="check-item"><input type="checkbox" name="mains" value="No"><span class="cb-box"></span>No</label>
           </div>
         </div>
         <div class="field-group">
           <label class="field-label">Spur Available Near CIE?</label>
           <div class="check-group">
-            <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="spur" value="Yes"><span class="cb-box"></span>Yes</label>
-            <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="spur" value="No – new spur required"><span class="cb-box"></span>No – new spur required</label>
+            <label class="check-item"><input type="checkbox" name="spur" value="Yes"><span class="cb-box"></span>Yes</label>
+            <label class="check-item"><input type="checkbox" name="spur" value="No – new spur required"><span class="cb-box"></span>No – new spur required</label>
           </div>
         </div>
       </div>
@@ -1199,20 +1143,20 @@ select {
       <div class="field-group">
         <label class="field-label">Cable Type</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cabletype" value="6-Core Screened"><span class="cb-box"></span>6-Core Screened</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cabletype" value="4-Core Screened"><span class="cb-box"></span>4-Core Screened</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cabletype" value="Wireless"><span class="cb-box"></span>Wireless</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cabletype" value="Hybrid (wired + wireless)"><span class="cb-box"></span>Hybrid</label>
+          <label class="check-item"><input type="checkbox" name="cabletype" value="6-Core Screened"><span class="cb-box"></span>6-Core Screened</label>
+          <label class="check-item"><input type="checkbox" name="cabletype" value="4-Core Screened"><span class="cb-box"></span>4-Core Screened</label>
+          <label class="check-item"><input type="checkbox" name="cabletype" value="Wireless"><span class="cb-box"></span>Wireless</label>
+          <label class="check-item"><input type="checkbox" name="cabletype" value="Hybrid (wired + wireless)"><span class="cb-box"></span>Hybrid</label>
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">Cable Route / Containment</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cableroute" value="Surface trunking"><span class="cb-box"></span>Surface trunking</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cableroute" value="Concealed in walls"><span class="cb-box"></span>Concealed in walls</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cableroute" value="Under floor"><span class="cb-box"></span>Under floor</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cableroute" value="Void / ceiling"><span class="cb-box"></span>Void / ceiling</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="cableroute" value="Cable tray"><span class="cb-box"></span>Cable tray</label>
+          <label class="check-item"><input type="checkbox" name="cableroute" value="Surface trunking"><span class="cb-box"></span>Surface trunking</label>
+          <label class="check-item"><input type="checkbox" name="cableroute" value="Concealed in walls"><span class="cb-box"></span>Concealed in walls</label>
+          <label class="check-item"><input type="checkbox" name="cableroute" value="Under floor"><span class="cb-box"></span>Under floor</label>
+          <label class="check-item"><input type="checkbox" name="cableroute" value="Void / ceiling"><span class="cb-box"></span>Void / ceiling</label>
+          <label class="check-item"><input type="checkbox" name="cableroute" value="Cable tray"><span class="cb-box"></span>Cable tray</label>
         </div>
       </div>
       <div class="field-group">
@@ -1227,8 +1171,8 @@ select {
         <div class="field-group">
           <label class="field-label">Fire-Rated Cable Required?</label>
           <div class="check-group">
-            <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="firerated" value="Yes"><span class="cb-box"></span>Yes</label>
-            <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="firerated" value="No"><span class="cb-box"></span>No</label>
+            <label class="check-item"><input type="checkbox" name="firerated" value="Yes"><span class="cb-box"></span>Yes</label>
+            <label class="check-item"><input type="checkbox" name="firerated" value="No"><span class="cb-box"></span>No</label>
           </div>
         </div>
       </div>
@@ -1245,9 +1189,9 @@ select {
       <div class="field-group">
         <label class="field-label">Panic / Hold-Up Buttons</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="panic" value="Fixed"><span class="cb-box"></span>Fixed</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="panic" value="Portable / Fob"><span class="cb-box"></span>Portable / Fob</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="panic" value="None required"><span class="cb-box"></span>None required</label>
+          <label class="check-item"><input type="checkbox" name="panic" value="Fixed"><span class="cb-box"></span>Fixed</label>
+          <label class="check-item"><input type="checkbox" name="panic" value="Portable / Fob"><span class="cb-box"></span>Portable / Fob</label>
+          <label class="check-item"><input type="checkbox" name="panic" value="None required"><span class="cb-box"></span>None required</label>
         </div>
       </div>
       <div class="field-group">
@@ -1257,8 +1201,8 @@ select {
       <div class="field-group">
         <label class="field-label">Remote Access / App</label>
         <div class="check-group">
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="remoteapp" value="Yes – required"><span class="cb-box"></span>Yes – required</label>
-          <label class="check-item" onclick="toggleCheck(this)"><input type="checkbox" name="remoteapp" value="Not required"><span class="cb-box"></span>Not required</label>
+          <label class="check-item"><input type="checkbox" name="remoteapp" value="Yes – required"><span class="cb-box"></span>Yes – required</label>
+          <label class="check-item"><input type="checkbox" name="remoteapp" value="Not required"><span class="cb-box"></span>Not required</label>
         </div>
       </div>
       <div class="field-group">
@@ -1415,11 +1359,11 @@ select {
 </main>
 
 <!-- ═══ ACTION BAR ═══════════════════════════════════════════════ -->
-<div id="action-bar" style="display:none">
-  <button id="save-draft-btn" onclick="saveDraft()">💾 Save Draft</button>
-  <button id="submit-btn" onclick="submitSurvey()">
-    <span id="submit-label">Submit &amp; Save to OneDrive</span>
-    <div id="submit-spinner" class="spinner"></div>
+<div id="action-bar">
+  <button id="pdf-btn" onclick="printReport()">📄 PDF</button>
+  <button id="share-btn" onclick="shareReport()">
+    <span id="share-label">📤 Save / Share Survey</span>
+    <div id="share-spinner" class="spinner"></div>
   </button>
 </div>
 
@@ -1427,155 +1371,69 @@ select {
 <div id="toast"></div>
 
 <!-- ═══ SCRIPTS ═════════════════════════════════════════════════ -->
-<!-- MSAL with fallback CDN -->
 <script>
+/* Remove the service worker and caches left by the previous version of this
+   app, otherwise iOS/Safari keeps serving the old cached files forever. */
 (function() {
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/dist/msal-browser.min.js';
-  s.onerror = function() {
-    // fallback
-    var s2 = document.createElement('script');
-    s2.src = 'https://unpkg.com/@azure/msal-browser/dist/index.js';
-    document.head.appendChild(s2);
-  };
-  document.head.appendChild(s);
+  try {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(r) { r.unregister(); });
+      }).catch(function() {});
+    }
+    if (window.caches && caches.keys) {
+      caches.keys().then(function(keys) {
+        keys.forEach(function(k) { caches.delete(k); });
+      }).catch(function() {});
+    }
+  } catch (e) {}
 })();
 </script>
+
 <script>
-/* ─────────────────────────────────────────────────────────────
-   CONFIGURATION — update CLIENT_ID after Azure AD app registration
-   ───────────────────────────────────────────────────────────── */
+/* ─── App Config ─────────────────────────────────────────────── */
 const CONFIG = {
-  CLIENT_ID:    e87562f6-96f4-424e-8ee7-8f65463493a8,   // ← Paste your Azure AD App (client) ID here
-  ONEDRIVE_FOLDER: 'Ease Electrical Surveys',
+  COMPANY: 'Ease Electrical Ltd',
+  EMAIL:   'dave@easeelectricalltd.co.uk',
+  DRAFT_KEY: 'ee_survey_draft_v1',
 };
 
-/* ─── MSAL Setup ──────────────────────────────────────────────── */
-const msalConfig = {
-  auth: {
-    clientId: CONFIG.CLIENT_ID,
-    authority: 'https://login.microsoftonline.com/organizations',
-    redirectUri: window.location.href.split('?')[0].split('#')[0],
-  },
-  cache: {
-    cacheLocation: 'localStorage',
-    storeAuthStateInCookie: true,  // Required for iOS Safari
-  },
-};
-const loginScopes = ['User.Read', 'Files.ReadWrite'];
-let msalInstance = null;
-let currentAccount = null;
-let msalReady = false;
+/* ─── Safe storage (works even opened as a local file on iOS) ─── */
+const store = (function() {
+  var mem = {}, ok = false;
+  try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); ok = true; } catch (e) { ok = false; }
+  return {
+    available: ok,
+    get: function(k) { if (ok) { try { return localStorage.getItem(k); } catch(e) {} } return (k in mem) ? mem[k] : null; },
+    set: function(k, v) { if (ok) { try { localStorage.setItem(k, v); return; } catch(e) {} } mem[k] = v; },
+    del: function(k) { if (ok) { try { localStorage.removeItem(k); } catch(e) {} } delete mem[k]; }
+  };
+})();
 
-function showAuthError(msg) {
-  const el = document.getElementById('auth-error');
-  el.style.display = 'block';
-  el.innerHTML = '⚠️ ' + msg;
+/* ─── "Add to Home Screen" hint ───────────────────────────────── */
+function dismissHint() {
+  document.getElementById('ios-hint').style.display = 'none';
+  store.set('ee_hint_dismissed', '1');
 }
 
-// Wait for MSAL script to load (CDN loaded dynamically)
-function waitForMsal(cb, attempts) {
-  attempts = attempts || 0;
-  if (typeof msal !== 'undefined') { cb(); return; }
-  if (attempts > 40) {
-    showAuthError('Could not load the Microsoft sign-in library. Check your internet connection and reload the page.');
-    return;
-  }
-  setTimeout(() => waitForMsal(cb, attempts + 1), 250);
-}
-
-async function initMsal() {
-  waitForMsal(async function() {
-    try {
-      // Validate client ID
-      if (!CONFIG.CLIENT_ID || CONFIG.CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
-        showAuthError('App not configured: CLIENT_ID is missing in index.html. Please follow the setup guide.');
-        return;
-      }
-      msalInstance = new msal.PublicClientApplication(msalConfig);
-      await msalInstance.initialize();
-      msalReady = true;
-
-      // Handle redirect response after login
-      try {
-        const result = await msalInstance.handleRedirectPromise();
-        if (result && result.account) {
-          currentAccount = result.account;
-          onSignedIn();
-          return;
-        }
-      } catch (e) {
-        console.error('Redirect error:', e);
-        showAuthError('Sign-in error: ' + (e.errorMessage || e.message || e));
-        return;
-      }
-
-      // Check if already signed in
-      const accounts = msalInstance.getAllAccounts();
-      if (accounts.length > 0) {
-        currentAccount = accounts[0];
-        onSignedIn();
-      }
-    } catch (e) {
-      console.error('MSAL init error:', e);
-      showAuthError('Initialisation error: ' + (e.message || JSON.stringify(e)) + '<br><br>Double-check your Client ID and redirect URI in Azure.');
-    }
-  });
-}
-
-async function handleAuthClick() {
-  if (!msalReady) {
-    if (CONFIG.CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
-      showAuthError('Please update CLIENT_ID in index.html with your Azure Application ID before signing in.');
-    } else {
-      showAuthError('Microsoft sign-in library is still loading — please wait a moment and try again.');
-    }
-    return;
-  }
-  if (currentAccount) {
-    msalInstance.logoutRedirect({ account: currentAccount });
-    return;
-  }
-  try {
-    // Sign in via redirect (most reliable on iOS Safari)
-    await msalInstance.loginRedirect({ scopes: loginScopes });
-  } catch (e) {
-    console.error('Login error:', e);
-    showAuthError('Login failed: ' + (e.errorMessage || e.message || e));
+function maybeShowHint() {
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var installed = window.navigator.standalone === true ||
+                  window.matchMedia('(display-mode: standalone)').matches;
+  if (isIOS && !installed && !store.get('ee_hint_dismissed')) {
+    document.getElementById('ios-hint').style.display = 'block';
   }
 }
 
-async function getAccessToken() {
-  const request = { scopes: loginScopes, account: currentAccount };
-  try {
-    const result = await msalInstance.acquireTokenSilent(request);
-    return result.accessToken;
-  } catch (e) {
-    // Silent failed — try redirect
-    msalInstance.acquireTokenRedirect(request);
-    return null;
-  }
-}
-
-function onSignedIn() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('survey-form').style.display = 'block';
-  document.getElementById('action-bar').style.display = 'flex';
-  document.getElementById('user-name').textContent = currentAccount.name || currentAccount.username;
-  document.getElementById('user-name').style.display = 'block';
-  document.getElementById('sign-btn').textContent = 'Sign Out';
-  loadDraft();
-  updateProgress();
-  // Pre-fill date and surveyor name
-  if (!document.getElementById('f_date').value) {
-    document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
-  }
-  if (!document.getElementById('f_surveyor').value) {
-    document.getElementById('f_surveyor').value = currentAccount.name || '';
-  }
-  if (!document.getElementById('f_declname').value) {
-    document.getElementById('f_declname').value = currentAccount.name || '';
-  }
+/* ─── Start a fresh survey ────────────────────────────────────── */
+let startingNew = false;
+function newSurvey() {
+  if (!confirm('Start a new blank survey?\n\nAny unsaved work will be cleared.')) return;
+  startingNew = true;          // stop the unload handler re-saving the draft
+  clearTimeout(saveTimer);     // cancel any pending auto-save
+  store.del(CONFIG.DRAFT_KEY);
+  location.reload();
 }
 
 /* ─── Section Toggle ──────────────────────────────────────────── */
@@ -1583,11 +1441,18 @@ function toggleSection(id) {
   document.getElementById(id).classList.toggle('collapsed');
 }
 
-/* ─── Checkbox Toggle ─────────────────────────────────────────── */
-function toggleCheck(el) {
-  el.classList.toggle('selected');
-  const cb = el.querySelector('input[type="checkbox"]');
-  cb.checked = el.classList.contains('selected');
+/* ─── Checkbox pills ──────────────────────────────────────────────
+   The <input> lives inside the <label>, so tapping the label toggles it
+   natively. We only mirror that state onto the pill's styling class. */
+function syncCheckPill(cb) {
+  const pill = cb.closest('.check-item');
+  if (pill) pill.classList.toggle('selected', cb.checked);
+}
+
+function initCheckPills() {
+  document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => { syncCheckPill(cb); scheduleSave(); });
+  });
 }
 
 /* ─── Progress Bar ────────────────────────────────────────────── */
@@ -1609,12 +1474,13 @@ function scheduleSave() {
 }
 
 function saveDraft() {
+  if (startingNew) return;
   const data = collectFormData();
-  localStorage.setItem('ee_survey_draft_v1', JSON.stringify(data));
+  store.set(CONFIG.DRAFT_KEY, JSON.stringify(data));
 }
 
 function loadDraft() {
-  const raw = localStorage.getItem('ee_survey_draft_v1');
+  const raw = store.get(CONFIG.DRAFT_KEY);
   if (!raw) return;
   try {
     const data = JSON.parse(raw);
@@ -1639,7 +1505,7 @@ function collectFormData() {
   d['__ee_rows'] = collectTableRows('ee-body', ['loc','device','entry','exit','finalexit','entryroute']);
   d['__dz_rows'] = collectTableRows('dz-body', ['floor','room','devtype','model','grade','env','wiredwl','tamper','notes']);
   d['__sd_rows'] = collectSDRows();
-  d['__qt_rows'] = collectTableRows('qt-body', ['desc','qty','unit','total']);
+  d['__qt_rows'] = collectTableRows('qt-body', ['desc','qty','unit'], 0);
   // Canvases
   d['__sketch'] = document.getElementById('sketch-canvas').toDataURL();
   d['__sig']    = document.getElementById('sig-canvas').toDataURL();
@@ -1647,12 +1513,15 @@ function collectFormData() {
   return d;
 }
 
-function collectTableRows(tbodyId, fields) {
+function collectTableRows(tbodyId, fields, offset) {
+  // offset = number of leading cells to skip (1 where there is a row-number
+  // cell, 0 for tables whose first cell is already a field)
+  if (offset === undefined) offset = 1;
   const rows = [];
   document.querySelectorAll('#' + tbodyId + ' tr').forEach(tr => {
     const row = {};
     fields.forEach((f, i) => {
-      const el = tr.cells[i + 1]; // skip row-num cell
+      const el = tr.cells[i + offset];
       if (!el) return;
       const inp = el.querySelector('input, select');
       if (inp) row[f] = inp.value;
@@ -1681,16 +1550,14 @@ function restoreFormData(d) {
   // Checkboxes
   document.querySelectorAll('#survey-form input[type="checkbox"]').forEach(cb => {
     const key = '__cb_' + cb.name + '__' + cb.value.replace(/\s+/g, '_');
-    if (d[key]) {
-      cb.checked = true;
-      cb.closest('.check-item')?.classList.add('selected');
-    }
+    cb.checked = !!d[key];
+    syncCheckPill(cb);
   });
   // Tables
   if (d['__ee_rows']) { d['__ee_rows'].forEach(() => addEERow()); restoreTableRows('ee-body', d['__ee_rows'], ['loc','device','entry','exit','finalexit','entryroute']); }
   if (d['__dz_rows']) { d['__dz_rows'].forEach(() => addDZRow()); restoreTableRows('dz-body', d['__dz_rows'], ['floor','room','devtype','model','grade','env','wiredwl','tamper','notes']); }
   if (d['__sd_rows']) { d['__sd_rows'].forEach(r => addSDRow(r)); }
-  if (d['__qt_rows']) { d['__qt_rows'].forEach(() => addQTRow()); restoreTableRows('qt-body', d['__qt_rows'], ['desc','qty','unit','total']); calcTotal(); }
+  if (d['__qt_rows']) { d['__qt_rows'].forEach(() => addQTRow()); restoreTableRows('qt-body', d['__qt_rows'], ['desc','qty','unit'], 0); calcTotal(); }
   // Canvases — restore after layout
   setTimeout(() => {
     if (d['__sketch']) loadCanvas('sketch-canvas', d['__sketch']);
@@ -1699,13 +1566,14 @@ function restoreFormData(d) {
   }, 200);
 }
 
-function restoreTableRows(tbodyId, rows, fields) {
+function restoreTableRows(tbodyId, rows, fields, offset) {
+  if (offset === undefined) offset = 1;
   const trs = document.querySelectorAll('#' + tbodyId + ' tr');
   rows.forEach((row, i) => {
     const tr = trs[i];
     if (!tr) return;
     fields.forEach((f, ci) => {
-      const el = tr.cells[ci + 1];
+      const el = tr.cells[ci + offset];
       if (!el) return;
       const inp = el.querySelector('input, select');
       if (inp && row[f] !== undefined) inp.value = row[f];
@@ -1717,7 +1585,16 @@ function loadCanvas(id, dataUrl) {
   const canvas = document.getElementById(id);
   const ctx = canvas.getContext('2d');
   const img = new Image();
-  img.onload = () => ctx.drawImage(img, 0, 0);
+  img.onload = () => {
+    // The saved image already includes the grid, so clear before redrawing
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Scale to fit if the device width changed since the survey was saved
+    if (img.width && img.width !== canvas.width) {
+      ctx.drawImage(img, 0, 0, canvas.width, img.height * (canvas.width / img.width));
+    } else {
+      ctx.drawImage(img, 0, 0);
+    }
+  };
   img.src = dataUrl;
 }
 
@@ -1803,6 +1680,7 @@ function calcTotal() {
     subtotal += total;
   });
   document.getElementById('qt-subtotal').textContent = '£' + subtotal.toFixed(2);
+  scheduleSave();
 }
 
 /* ─── Sketch Canvas ───────────────────────────────────────────── */
@@ -1867,7 +1745,7 @@ function setupCanvasEvents(canvasId, getCtx, getDrawing, setDrawing, getColor, e
       ctx.stroke();
     }
   }
-  function end(e) { setDrawing(false); }
+  function end(e) { if (getDrawing()) { setDrawing(false); scheduleSave(); } }
   canvas.addEventListener('mousedown',  start, { passive: false });
   canvas.addEventListener('mousemove',  draw,  { passive: false });
   canvas.addEventListener('mouseup',    end);
@@ -1905,29 +1783,6 @@ function insertPhoto(e) {
   reader.readAsDataURL(file);
 }
 
-/* ─── OneDrive Upload ─────────────────────────────────────────── */
-async function uploadToOneDrive(accessToken, filename, content, mimeType) {
-  // Ensure folder exists
-  await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${CONFIG.ONEDRIVE_FOLDER}:/children`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: CONFIG.ONEDRIVE_FOLDER, folder: {}, '@microsoft.graph.conflictBehavior': 'ignore' }),
-  }).catch(() => {}); // folder may already exist
-
-  // Create subfolder for folder structure: OneDrive/Ease Electrical Surveys/
-  const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${encodeURIComponent(CONFIG.ONEDRIVE_FOLDER)}/${encodeURIComponent(filename)}:/content`;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': mimeType },
-    body: content,
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Upload failed: ${res.status} ${err}`);
-  }
-  return res.json();
-}
-
 /* ─── Generate HTML Report ────────────────────────────────────── */
 function generateReport(data) {
   const checked = (name) => {
@@ -1935,16 +1790,25 @@ function generateReport(data) {
   };
   const v = (id) => data[id] || '—';
 
-  let dzRows = '', eeRows = '', qtRows = '', sdInfo = '';
-  if (data.__dz_rows) data.__dz_rows.forEach((r,i) => {
+  let dzRows = '', eeRows = '', qtRows = '';
+
+  // Only include rows the surveyor actually filled in
+  const dz = (data.__dz_rows || []).filter(r => (r.floor||r.room||r.model||r.notes||'').trim());
+  dz.forEach((r,i) => {
     dzRows += `<tr><td>${i+1}</td><td>${r.floor||''}</td><td>${r.room||''}</td><td>${r.devtype||''}</td><td>${r.model||''}</td><td>${r.grade||''}</td><td>${r.env||''}</td><td>${r.wiredwl||''}</td><td>${r.tamper||''}</td><td>${r.notes||''}</td></tr>`;
   });
-  if (data.__ee_rows) data.__ee_rows.forEach((r,i) => {
+
+  const ee = (data.__ee_rows || []).filter(r => (r.loc||r.device||'').trim());
+  ee.forEach((r,i) => {
     eeRows += `<tr><td>${i+1}</td><td>${r.loc||''}</td><td>${r.device||''}</td><td>${r.entry||''}</td><td>${r.exit||''}</td><td>${r.finalexit||''}</td><td>${r.entryroute||''}</td></tr>`;
   });
-  if (data.__qt_rows) data.__qt_rows.forEach(r => {
+
+  const qt = (data.__qt_rows || []).filter(r => (r.desc||'').trim());
+  let qtSubtotal = 0;
+  qt.forEach(r => {
     const total = (parseFloat(r.qty)||0) * (parseFloat(r.unit)||0);
-    qtRows += `<tr><td>${r.desc||''}</td><td>${r.qty||''}</td><td>£${parseFloat(r.unit||0).toFixed(2)}</td><td>£${total.toFixed(2)}</td></tr>`;
+    qtSubtotal += total;
+    qtRows += `<tr><td>${r.desc||''}</td><td>${r.qty||''}</td><td>£${(parseFloat(r.unit)||0).toFixed(2)}</td><td>£${total.toFixed(2)}</td></tr>`;
   });
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Survey ${v('f_sref')}</title>
@@ -2035,7 +1899,7 @@ img.sig{max-height:60px;border:1px solid #CBD5E0;border-radius:4px}
 
 <h2>15. Preliminary Quotation</h2>
 <table><tr><th>Item Description</th><th>Qty</th><th>Unit (£)</th><th>Total (£)</th></tr>${qtRows||'<tr><td colspan="4">No items recorded</td></tr>'}
-<tr><td colspan="3" style="text-align:right;font-weight:700">Subtotal</td><td style="font-weight:700">${document.getElementById('qt-subtotal').textContent}</td></tr></table>
+<tr><td colspan="3" style="text-align:right;font-weight:700">Subtotal</td><td style="font-weight:700">£${qtSubtotal.toFixed(2)}</td></tr></table>
 <p><strong>Install Time:</strong> ${v('f_installdays')} day(s) &nbsp; <strong>Annual Maintenance:</strong> £${v('f_maintenance')}</p>
 <p><strong>Notes/Exclusions:</strong> ${v('f_qtnotes')}</p>
 
@@ -2055,36 +1919,80 @@ img.sig{max-height:60px;border:1px solid #CBD5E0;border-radius:4px}
 </body></html>`;
 }
 
-/* ─── Submit Survey ───────────────────────────────────────────── */
-async function submitSurvey() {
-  if (!currentAccount) { toast('Please sign in first', 'error'); return; }
-  const sref = document.getElementById('f_sref').value.trim() || 'NREF';
-  const dateStr = document.getElementById('f_date').value || new Date().toISOString().split('T')[0];
+/* ─── Filename for the finished survey ────────────────────────── */
+function reportFilename(ext) {
+  var ref  = (document.getElementById('f_sref').value || 'NOREF').trim().replace(/[^A-Za-z0-9\-_]/g, '-');
+  var date = document.getElementById('f_date').value || new Date().toISOString().split('T')[0];
+  return 'Survey-' + ref + '-' + date + '.' + ext;
+}
 
-  document.getElementById('submit-label').style.display = 'none';
-  document.getElementById('submit-spinner').classList.add('active');
-  document.getElementById('submit-btn').disabled = true;
+/* ─── Print / Save as PDF ─────────────────────────────────────── */
+function printReport() {
+  saveDraft();
+  var html = generateReport(collectFormData());
+  var frame = document.getElementById('print-frame');
+  if (frame) frame.remove();
+  frame = document.createElement('iframe');
+  frame.id = 'print-frame';
+  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;';
+  document.body.appendChild(frame);
+  var doc = frame.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+  setTimeout(function() {
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+      toast('Choose "Save to Files" or OneDrive', 'success');
+    } catch (e) {
+      // Fallback: open in a new tab so the user can use Share -> Print
+      var blob = new Blob([html], { type: 'text/html' });
+      window.open(URL.createObjectURL(blob), '_blank');
+    }
+  }, 600);
+}
+
+/* ─── Save / Share the finished survey ────────────────────────── */
+async function shareReport() {
+  saveDraft();
+  var btn = document.getElementById('share-btn');
+  document.getElementById('share-label').style.display = 'none';
+  document.getElementById('share-spinner').classList.add('active');
+  btn.disabled = true;
 
   try {
-    const token = await getAccessToken();
-    if (!token) return; // redirect in progress
-    const data = collectFormData();
-    const filename = `EASE-SS-${sref}-${dateStr}`;
-    // Upload HTML report
-    const html = generateReport(data);
-    await uploadToOneDrive(token, filename + '.html', html, 'text/html');
-    // Upload JSON backup
-    await uploadToOneDrive(token, filename + '.json', JSON.stringify(data, null, 2), 'application/json');
-    // Clear draft
-    localStorage.removeItem('ee_survey_draft_v1');
-    toast('✓ Saved to OneDrive!', 'success');
-  } catch(e) {
-    console.error('Upload error:', e);
-    toast('Upload failed – check connection', 'error');
+    var data = collectFormData();
+    var html = generateReport(data);
+    var name = reportFilename('html');
+    var file = new File([html], name, { type: 'text/html' });
+
+    // Preferred: native iOS share sheet -> OneDrive, Mail, Files, WhatsApp...
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'Site Survey ' + (data.f_sref || ''),
+        text: 'PD 6662:2017 site survey - ' + (data.f_cname || '')
+      });
+      toast('Survey shared', 'success');
+    } else {
+      // Fallback: straight download to the device
+      var url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      var a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
+      toast('Survey downloaded', 'success');
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') {
+      // User cancelled the share sheet - not an error
+    } else {
+      console.error(e);
+      toast('Could not share - try the PDF button', 'error');
+    }
   } finally {
-    document.getElementById('submit-label').style.display = 'inline';
-    document.getElementById('submit-spinner').classList.remove('active');
-    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('share-label').style.display = 'inline';
+    document.getElementById('share-spinner').classList.remove('active');
+    btn.disabled = false;
   }
 }
 
@@ -2094,11 +2002,6 @@ function toast(msg, type) {
   el.textContent = msg;
   el.className = 'show ' + (type || '');
   setTimeout(() => el.className = '', 3000);
-}
-
-/* ─── Service Worker ──────────────────────────────────────────── */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW:', e));
 }
 
 /* ─── Init on load ────────────────────────────────────────────── */
@@ -2118,14 +2021,35 @@ window.addEventListener('load', async () => {
   clsigCtx = initCanvas('clsig-canvas', 'clsig-canvas-wrap', null, '#1B3A5C', 100, 2);
   setupCanvasEvents('clsig-canvas', () => clsigCtx, () => clsigDrawing, (v) => { clsigDrawing = v; }, '#1B3A5C', () => false);
 
-  // Init MSAL
-  await initMsal();
+  // Wire up checkbox pills, then restore any saved draft
+  initCheckPills();
+  loadDraft();
 
-  // Init dynamic table rows (start with some)
-  for (let i = 0; i < 3; i++) addEERow();
-  for (let i = 0; i < 8; i++) addDZRow();
-  for (let i = 0; i < 2; i++) addQTRow();
-  addSDRow();
+  // Prefill today's date
+  if (!document.getElementById('f_date').value) {
+    document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+  }
+  if (!document.getElementById('f_decldate').value) {
+    document.getElementById('f_decldate').value = new Date().toISOString().split('T')[0];
+  }
+  updateProgress();
+
+  // Starter rows (only if no draft was restored)
+  if (!document.getElementById('ee-body').rows.length)  { for (let i = 0; i < 3; i++) addEERow(); }
+  if (!document.getElementById('dz-body').rows.length)  { for (let i = 0; i < 8; i++) addDZRow(); }
+  if (!document.getElementById('qt-body').rows.length)  { for (let i = 0; i < 2; i++) addQTRow(); }
+  if (!document.querySelectorAll('#sd-rows .sd-row').length) { addSDRow(); }
+
+  // Catch-all: any input or change anywhere in the form triggers a save
+  const form = document.getElementById('survey-form');
+  form.addEventListener('input',  scheduleSave);
+  form.addEventListener('change', scheduleSave);
+
+  // Show the "Add to Home Screen" tip on iOS if not installed yet
+  maybeShowHint();
+
+  // Warn before accidentally closing with unsaved changes
+  window.addEventListener('beforeunload', function() { if (!startingNew) saveDraft(); });
 });
 </script>
 </body>
