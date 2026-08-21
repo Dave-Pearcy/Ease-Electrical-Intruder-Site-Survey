@@ -220,6 +220,30 @@ select {
   padding-right: 36px;
 }
 
+/* ─── Field hint row ────────────────────────────────────────── */
+.field-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 5px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.hint-btn {
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px 2px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.hint-btn:active { opacity: 0.6; }
+
 /* ─── Two-column row ────────────────────────────────────────── */
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 400px) { .field-row { grid-template-columns: 1fr; } }
@@ -525,7 +549,11 @@ select {
       <div class="field-row">
         <div class="field-group">
           <label class="field-label">Survey Ref <span class="req">*</span></label>
-          <input type="text" id="f_sref" placeholder="EASE-SS-001" oninput="updateProgress()">
+          <input type="text" id="f_sref" placeholder="EASE-INTRUDER_001" oninput="updateProgress()">
+          <div class="field-hint">
+            <span>Auto-numbered &middot; editable</span>
+            <button type="button" class="hint-btn" onclick="setNextNumber()">Set number</button>
+          </div>
         </div>
         <div class="field-group">
           <label class="field-label">Date of Survey <span class="req">*</span></label>
@@ -1398,6 +1426,9 @@ const CONFIG = {
   COMPANY: 'Ease Electrical Ltd',
   EMAIL:   'dave@easeelectricalltd.co.uk',
   DRAFT_KEY: 'ee_survey_draft_v1',
+  COUNTER_KEY: 'ee_survey_counter',
+  REF_PREFIX: 'EASE-INTRUDER_',   // change here if the format ever changes
+  REF_PAD: 3,                     // 001, 002 ... 999, then 1000
 };
 
 /* ─── Safe storage (works even opened as a local file on iOS) ─── */
@@ -1411,6 +1442,52 @@ const store = (function() {
     del: function(k) { if (ok) { try { localStorage.removeItem(k); } catch(e) {} } delete mem[k]; }
   };
 })();
+
+/* ─── Survey reference auto-numbering ─────────────────────────────
+   The counter stores the last COMPLETED survey number. A new survey
+   is shown the next number, but that number is only "used up" once
+   the survey is actually saved/shared - so abandoning a blank survey
+   doesn't burn a reference and leave a gap in your records. */
+function padRef(n) {
+  var str = String(n);
+  while (str.length < CONFIG.REF_PAD) str = '0' + str;
+  return str;
+}
+function makeRef(n)     { return CONFIG.REF_PREFIX + padRef(n); }
+function getCounter()   { var v = parseInt(store.get(CONFIG.COUNTER_KEY), 10); return isNaN(v) ? 0 : v; }
+function setCounter(n)  { store.set(CONFIG.COUNTER_KEY, String(n)); }
+
+// Pull the trailing number out of a reference, however it's been typed
+function refNumber(str) {
+  var m = String(str || '').match(/(\d+)\s*$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// Give a brand-new survey the next reference
+function allocateRef() {
+  var el = document.getElementById('f_sref');
+  if (el.value.trim()) return;        // restored draft or hand-typed - leave alone
+  el.value = makeRef(getCounter() + 1);
+}
+
+// Called once a survey is saved/shared: that number is now taken
+function commitRef() {
+  var n = refNumber(document.getElementById('f_sref').value);
+  if (n !== null && n > getCounter()) setCounter(n);
+}
+
+// Lets you jump the sequence (e.g. you're already up to 15 on paper)
+function setNextNumber() {
+  var suggested = getCounter() + 1;
+  var v = prompt('What should the NEXT survey number be?\n\nCurrent: ' + makeRef(suggested), String(suggested));
+  if (v === null) return;
+  var n = parseInt(String(v).replace(/\D/g, ''), 10);
+  if (isNaN(n) || n < 1) { toast('Please enter a whole number', 'error'); return; }
+  setCounter(n - 1);
+  document.getElementById('f_sref').value = makeRef(n);
+  toast('Reference set to ' + makeRef(n), 'success');
+  scheduleSave();
+}
 
 /* ─── "Add to Home Screen" hint ───────────────────────────────── */
 function dismissHint() {
@@ -1934,9 +2011,16 @@ img.sig{max-height:60px;border:1px solid #CBD5E0;border-radius:4px}
 
 /* ─── Filename for the finished survey ────────────────────────── */
 function reportFilename(ext) {
-  var ref  = (document.getElementById('f_sref').value || 'NOREF').trim().replace(/[^A-Za-z0-9\-_]/g, '-');
-  var date = document.getElementById('f_date').value || new Date().toISOString().split('T')[0];
-  return 'Survey-' + ref + '-' + date + '.' + ext;
+  // Strip characters that aren't allowed in filenames on iOS/Windows/OneDrive
+  function safe(v, max) {
+    return String(v || '').replace(/[\/\\:*?"<>|#%{}$!'`~+&]/g, '')
+                          .replace(/\s+/g, ' ').trim().slice(0, max || 40);
+  }
+  var ref    = safe(document.getElementById('f_sref').value, 40) || 'NO-REF';
+  var client = safe(document.getElementById('f_cname').value, 40);
+  var date   = document.getElementById('f_date').value || new Date().toISOString().split('T')[0];
+  // e.g. "EASE-INTRUDER_007 - Northgate Jewellers Ltd - 2026-08-21.html"
+  return ref + (client ? ' - ' + client : '') + ' - ' + date + '.' + ext;
 }
 
 /* ─── Print / Save as PDF ─────────────────────────────────────── */
@@ -1955,6 +2039,7 @@ function printReport() {
     try {
       frame.contentWindow.focus();
       frame.contentWindow.print();
+      commitRef();
       toast('Choose "Save to Files" or OneDrive', 'success');
     } catch (e) {
       // Fallback: open in a new tab so the user can use Share -> Print
@@ -1985,6 +2070,7 @@ async function shareReport() {
         title: 'Site Survey ' + (data.f_sref || ''),
         text: 'PD 6662:2017 site survey - ' + (data.f_cname || '')
       });
+      commitRef();
       toast('Survey shared', 'success');
     } else {
       // Fallback: straight download to the device
@@ -1993,6 +2079,7 @@ async function shareReport() {
       a.href = url; a.download = name;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
+      commitRef();
       toast('Survey downloaded', 'success');
     }
   } catch (e) {
@@ -2037,6 +2124,9 @@ window.addEventListener('load', async () => {
   // Wire up checkbox pills, then restore any saved draft
   initCheckPills();
   loadDraft();
+
+  // Give a new survey its next reference number
+  allocateRef();
 
   // Prefill today's date
   if (!document.getElementById('f_date').value) {
