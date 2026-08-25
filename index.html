@@ -348,6 +348,47 @@ select {
 .grade-ref p { margin-bottom: 4px; color: var(--muted); }
 .grade-ref strong { color: var(--navy); }
 
+/* ─── Important notice (client acknowledgement) ─────────────── */
+.notice-box {
+  border: 2px solid var(--rust);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #FFF8F4;
+}
+.notice-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--rust);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.notice-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.notice-ack {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.notice-ack .check-item {
+  background: var(--white);
+  width: 100%;
+  align-items: flex-start;
+  line-height: 1.4;
+}
+.notice-ack .check-item.selected {
+  background: #EAF5E3;
+  border-color: var(--green);
+  color: var(--text);
+}
+.notice-ack .check-item.selected .cb-box {
+  background: var(--green);
+  border-color: var(--green);
+}
+
 /* ─── Info Box ──────────────────────────────────────────────── */
 .info-box {
   background: #E8F4FD;
@@ -818,10 +859,10 @@ select {
     </div>
   </div>
 
-  <!-- ── S5: Grade & Environmental Class ──────────────────────── -->
+  <!-- ── S5: System Grade & Signalling ── -->
   <div class="section-card" id="s5">
     <div class="section-header" onclick="toggleSection('s5')">
-      <h2>5. Grade &amp; Environmental Class</h2>
+      <h2>5. System Grade &amp; Signalling</h2>
       <span class="section-toggle">▾</span>
     </div>
     <div class="section-body">
@@ -846,20 +887,14 @@ select {
       </div>
       <hr class="field-divider">
       <div class="grade-ref">
-        <p><strong>Class I</strong> – Indoor, sheltered, temperature-controlled (heated interior).</p>
-        <p><strong>Class II</strong> – Indoor, general. Non-temperature controlled (unheated garage, loft).</p>
-        <p><strong>Class III</strong> – Outdoor, sheltered (canopy, covered external area).</p>
-        <p><strong>Class IV</strong> – Outdoor, general. Fully exposed.</p>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Environmental Class</label>
-        <div class="check-group">
-          <label class="check-item"><input type="checkbox" name="envclass" value="Class I"><span class="cb-box"></span>Class I</label>
-          <label class="check-item"><input type="checkbox" name="envclass" value="Class II"><span class="cb-box"></span>Class II</label>
-          <label class="check-item"><input type="checkbox" name="envclass" value="Class III"><span class="cb-box"></span>Class III</label>
-          <label class="check-item"><input type="checkbox" name="envclass" value="Class IV"><span class="cb-box"></span>Class IV</label>
-          <label class="check-item"><input type="checkbox" name="envclass" value="Mixed"><span class="cb-box"></span>Mixed – see notes</label>
-        </div>
+        <p><strong>Alarm Transmission System (ATS) categories</strong> – BS EN 50136-1</p>
+        <p><strong>Single path (SP1–SP6)</strong> – one transmission path, e.g. IP or radio alone.
+           Higher numbers mean shorter reporting times and closer supervision of the path.</p>
+        <p><strong>Dual path (DP1–DP4)</strong> – two independent paths, e.g. IP with radio backup, or radio with radio.
+           Used where signalling must continue if one path fails.</p>
+        <p><strong>Bells only</strong> – no remote signalling; audible warning devices only.</p>
+        <p style="margin-top:6px"><em>The category required depends on the system grade <u>and</u> the
+           notification option chosen – see PD 6662:2017 Table 10.</em></p>
       </div>
       <div class="field-row">
         <div class="field-group">
@@ -870,12 +905,23 @@ select {
           </select>
         </div>
         <div class="field-group">
-          <label class="field-label">Confirmed Env. Class</label>
-          <select id="f_confenv">
+          <label class="field-label">Signalling Category (ATS)</label>
+          <select id="f_atscat">
             <option value="">– select –</option>
-            <option>Class I</option><option>Class II</option><option>Class III</option><option>Class IV</option><option>Mixed</option>
+            <option>Bells only – no signalling</option>
+            <optgroup label="Single path">
+              <option>SP1</option><option>SP2</option><option>SP3</option>
+              <option>SP4</option><option>SP5</option><option>SP6</option>
+            </optgroup>
+            <optgroup label="Dual path">
+              <option>DP1</option><option>DP2</option><option>DP3</option><option>DP4</option>
+            </optgroup>
           </select>
         </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Signalling Justification / Insurer Requirement</label>
+        <textarea id="f_atsjust" rows="2" placeholder="e.g. DP3 required by insurer for high-value stock" oninput="updateProgress()"></textarea>
       </div>
     </div>
   </div>
@@ -922,7 +968,6 @@ select {
             <th>Device Type</th>
             <th>Make / Model</th>
             <th>Grade</th>
-            <th>Env</th>
             <th>Wired / WL</th>
             <th>Tamper?</th>
             <th>Notes</th>
@@ -1023,12 +1068,12 @@ select {
       <div class="field-group">
         <label class="field-label">Signalling Method</label>
         <div class="check-group">
-          <label class="check-item"><input type="checkbox" name="sigmethod" value="PSTN"><span class="cb-box"></span>PSTN</label>
-          <label class="check-item"><input type="checkbox" name="sigmethod" value="Dual-path (PSTN + IP)"><span class="cb-box"></span>Dual-path (PSTN + IP)</label>
-          <label class="check-item"><input type="checkbox" name="sigmethod" value="IP Only"><span class="cb-box"></span>IP Only</label>
-          <label class="check-item"><input type="checkbox" name="sigmethod" value="GSM / GPRS"><span class="cb-box"></span>GSM / GPRS</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="Single path – IP only"><span class="cb-box"></span>Single path – IP only</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="Single path – Radio only"><span class="cb-box"></span>Single path – Radio only</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="Dual path – IP + Radio"><span class="cb-box"></span>Dual path – IP + Radio</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="Dual path – Radio + Radio"><span class="cb-box"></span>Dual path – Radio + Radio</label>
           <label class="check-item"><input type="checkbox" name="sigmethod" value="App / Self-monitor"><span class="cb-box"></span>App / Self-monitor</label>
-          <label class="check-item"><input type="checkbox" name="sigmethod" value="None"><span class="cb-box"></span>None</label>
+          <label class="check-item"><input type="checkbox" name="sigmethod" value="None – bells only"><span class="cb-box"></span>None – bells only</label>
         </div>
       </div>
       <div class="field-row">
@@ -1365,6 +1410,19 @@ select {
         </div>
       </div>
       <hr class="field-divider">
+
+      <div class="notice-box">
+        <div class="notice-title">IMPORTANT</div>
+        <div class="notice-text">If using a remote device to remotely set/unset your intruder alarm system, your attention is drawn to the fact that whenever a premises is unattended but its intruder alarm system(s) is (are) not fully set, any related insurance cover might be inoperative. For advice on this matter, it is recommended that you consult your insurer(s).</div>
+        <div class="notice-ack">
+          <label class="check-item">
+            <input type="checkbox" name="remoteack" value="Acknowledged by client">
+            <span class="cb-box"></span>
+            I confirm this notice has been read and understood
+          </label>
+        </div>
+      </div>
+
       <div class="field-group">
         <label class="field-label">Client / Site Representative Name</label>
         <input type="text" id="f_clientrepname" oninput="updateProgress()">
@@ -1582,7 +1640,7 @@ function collectFormData() {
   });
   // Tables
   d['__ee_rows'] = collectTableRows('ee-body', ['loc','device','entry','exit','finalexit','entryroute']);
-  d['__dz_rows'] = collectTableRows('dz-body', ['floor','room','devtype','model','grade','env','wiredwl','tamper','notes']);
+  d['__dz_rows'] = collectTableRows('dz-body', ['floor','room','devtype','model','grade','wiredwl','tamper','notes']);
   d['__sd_rows'] = collectSDRows();
   d['__qt_rows'] = collectTableRows('qt-body', ['desc','qty','unit'], 0);
   // Canvases
@@ -1634,7 +1692,7 @@ function restoreFormData(d) {
   });
   // Tables
   if (d['__ee_rows']) { d['__ee_rows'].forEach(() => addEERow()); restoreTableRows('ee-body', d['__ee_rows'], ['loc','device','entry','exit','finalexit','entryroute']); }
-  if (d['__dz_rows']) { d['__dz_rows'].forEach(() => addDZRow()); restoreTableRows('dz-body', d['__dz_rows'], ['floor','room','devtype','model','grade','env','wiredwl','tamper','notes']); }
+  if (d['__dz_rows']) { d['__dz_rows'].forEach(() => addDZRow()); restoreTableRows('dz-body', d['__dz_rows'], ['floor','room','devtype','model','grade','wiredwl','tamper','notes']); }
   if (d['__sd_rows']) { d['__sd_rows'].forEach(r => addSDRow(r)); }
   if (d['__qt_rows']) { d['__qt_rows'].forEach(() => addQTRow()); restoreTableRows('qt-body', d['__qt_rows'], ['desc','qty','unit'], 0); calcTotal(); }
   // Canvases — restore after layout
@@ -1704,7 +1762,6 @@ function addDZRow() {
     <td><select style="min-width:90px"><option value="">Type</option><option>PIR</option><option>Dual-tech</option><option>Magnetic Contact</option><option>Vibration</option><option>Glass Break</option><option>Beam</option><option>Panic Button</option><option>Smoke</option><option>CO</option><option>Shock Sensor</option><option>Other</option></select></td>
     <td><input type="text" placeholder="Make/Model"></td>
     <td><select><option value="">G</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
-    <td><select><option value="">Env</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></td>
     <td><select><option>Wired</option><option>Wireless</option></select></td>
     <td><select><option>Yes</option><option>No</option></select></td>
     <td><input type="text" placeholder="Notes"></td>
@@ -1874,7 +1931,7 @@ function generateReport(data) {
   // Only include rows the surveyor actually filled in
   const dz = (data.__dz_rows || []).filter(r => (r.floor||r.room||r.model||r.notes||'').trim());
   dz.forEach((r,i) => {
-    dzRows += `<tr><td>${i+1}</td><td>${r.floor||''}</td><td>${r.room||''}</td><td>${r.devtype||''}</td><td>${r.model||''}</td><td>${r.grade||''}</td><td>${r.env||''}</td><td>${r.wiredwl||''}</td><td>${r.tamper||''}</td><td>${r.notes||''}</td></tr>`;
+    dzRows += `<tr><td>${i+1}</td><td>${r.floor||''}</td><td>${r.room||''}</td><td>${r.devtype||''}</td><td>${r.model||''}</td><td>${r.grade||''}</td><td>${r.wiredwl||''}</td><td>${r.tamper||''}</td><td>${r.notes||''}</td></tr>`;
   });
 
   const ee = (data.__ee_rows || []).filter(r => (r.loc||r.device||'').trim());
@@ -1910,6 +1967,12 @@ tr:nth-child(even) td{background:#F7FAFC}
 
 .footer{margin-top:30px;font-size:9pt;color:#718096;border-top:3px solid #6BA415;padding-top:8px}
 img.sig{max-height:60px;border:1px solid #CBD5E0;border-radius:4px}
+.notice{border:2px solid #843200;border-radius:5px;padding:10px 14px;margin:14px 0;background:#FFF8F4}
+.notice-hd{font-weight:800;color:#843200;letter-spacing:1px;font-size:10.5pt;margin-bottom:4px}
+.notice p{font-size:10pt;line-height:1.5;margin:0 0 6px}
+.ack{font-weight:700;margin:8px 0 0 !important;padding-top:6px;border-top:1px dashed #CBD5E0}
+.ack-yes{color:#2E7D32}
+.ack-no{color:#C62828}
 @media print{h2{background:#007AB4;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body>
 <div class="brandbar">
@@ -1946,16 +2009,17 @@ img.sig{max-height:60px;border:1px solid #CBD5E0;border-radius:4px}
 <tr><th>Existing Zones</th><td>${v('f_exzones')}</td><th>Wiring Condition</th><td>${checked('wiring')}</td></tr>
 <tr><th>ARC Contract</th><td colspan="3">${checked('arc')}</td></tr></table>
 
-<h2>5. Grade &amp; Environmental Class</h2>
+<h2>5. System Grade &amp; Signalling</h2>
 <table><tr><th>Recommended Grade</th><td>${checked('grade')}</td><th>Confirmed Grade</th><td>${v('f_confgrade')}</td></tr>
-<tr><th>Env. Class</th><td>${checked('envclass')}</td><th>Confirmed Env. Class</th><td>${v('f_confenv')}</td></tr>
-<tr><th>Grade Justification</th><td colspan="3">${v('f_gradejust')}</td></tr></table>
+<tr><th>Signalling Category (ATS)</th><td>${v('f_atscat')}</td><th>Standard</th><td>BS EN 50136-1</td></tr>
+<tr><th>Grade Justification</th><td colspan="3">${v('f_gradejust')}</td></tr>
+<tr><th>Signalling Justification</th><td colspan="3">${v('f_atsjust')}</td></tr></table>
 
 <h2>6. Entry / Exit Route Details</h2>
 <table><tr><th>#</th><th>Location/Door</th><th>Device Proposed</th><th>Entry Delay (s)</th><th>Exit Delay (s)</th><th>Final Exit?</th><th>Entry Route?</th></tr>${eeRows||'<tr><td colspan="7">None recorded</td></tr>'}</table>
 
 <h2>7. Detection Zone Schedule</h2>
-<table><tr><th>#</th><th>Floor</th><th>Room/Area</th><th>Device Type</th><th>Make/Model</th><th>Grade</th><th>Env</th><th>Wired/WL</th><th>Tamper</th><th>Notes</th></tr>${dzRows||'<tr><td colspan="10">None recorded</td></tr>'}</table>
+<table><tr><th>#</th><th>Floor</th><th>Room/Area</th><th>Device Type</th><th>Make/Model</th><th>Grade</th><th>Wired/WL</th><th>Tamper</th><th>Notes</th></tr>${dzRows||'<tr><td colspan="9">None recorded</td></tr>'}</table>
 
 <h2>8. Control &amp; Indicating Equipment</h2>
 <table><tr><th>Make/Model</th><td>${v('f_ciemake')}</td><th>Location</th><td>${v('f_cieloc')}</td></tr>
@@ -1968,7 +2032,8 @@ img.sig{max-height:60px;border:1px solid #CBD5E0;border-radius:4px}
 <h2>9. Signalling &amp; ARC</h2>
 <table><tr><th>Signalling Method</th><td>${checked('sigmethod')}</td><th>ARC Name</th><td>${v('f_arcname')}</td></tr>
 <tr><th>ARC Tel</th><td>${v('f_arctel')}</td><th>Signalling Standard</th><td>${v('f_sigstd')}</td></tr>
-<tr><th>Response Category</th><td>${v('f_respcat')}</td><th>Confirmed Alarm</th><td>${checked('confalarm')}</td></tr></table>
+<tr><th>Response Category</th><td>${v('f_respcat')}</td><th>Confirmed Alarm</th><td>${checked('confalarm')}</td></tr>
+<tr><th>ATS Category</th><td colspan="3">${v('f_atscat')}</td></tr></table>
 
 <h2>10–12. Sounders, Power &amp; Cabling</h2>
 <table><tr><th>Sounder Delay (s)</th><td>${v('f_snddelay')}</td><th>Duration (min)</th><td>${v('f_snddur')}</td></tr>
@@ -1997,6 +2062,15 @@ img.sig{max-height:60px;border:1px solid #CBD5E0;border-radius:4px}
 <table><tr><th>Surveyor Name</th><td>${v('f_declname')}</td><th>Date</th><td>${v('f_decldate')}</td></tr>
 <tr><th>NSI/SSAIB Cert</th><td>${v('f_declcert')}</td><th>Company</th><td>${v('f_declco')}</td></tr></table>
 <p><strong>Surveyor Signature:</strong><br><img class="sig" src="${data.__sig||''}"></p>
+<div class="notice">
+  <div class="notice-hd">IMPORTANT</div>
+  <p>If using a remote device to remotely set/unset your intruder alarm system, your attention is drawn to the fact that whenever a premises is unattended but its intruder alarm system(s) is (are) not fully set, any related insurance cover might be inoperative. For advice on this matter, it is recommended that you consult your insurer(s).</p>
+  <p class="ack ${data['__cb_remoteack__Acknowledged_by_client'] ? 'ack-yes' : 'ack-no'}">
+    ${data['__cb_remoteack__Acknowledged_by_client']
+      ? '&#10004; Acknowledged by the client / site representative named below.'
+      : '&#10006; NOT acknowledged at the time of survey.'}
+  </p>
+</div>
 <p><strong>Client Representative:</strong> ${v('f_clientrepname')}</p>
 <p><strong>Client Signature:</strong><br><img class="sig" src="${data.__clsig||''}"></p>
 <p><strong>Survey Notes:</strong> ${v('f_surveynotes')}</p>
